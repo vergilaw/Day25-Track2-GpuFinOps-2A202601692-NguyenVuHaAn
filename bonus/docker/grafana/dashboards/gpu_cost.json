@@ -1,12 +1,49 @@
 {
-  "title": "Lab 25 — GPU Cost & Efficiency",
+  "title": "Lab 25 — GPU FinOps Cost & Efficiency Dashboard",
   "schemaVersion": 39,
+  "timezone": "browser",
+  "refresh": "10s",
   "panels": [
-    {"type": "timeseries", "title": "GPU-Util % (the 'busy' clock)", "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-     "targets": [{"expr": "gpu_util_pct"}]},
-    {"type": "timeseries", "title": "MFU (real efficiency)", "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
-     "targets": [{"expr": "gpu_mfu"}]},
-    {"type": "bargauge", "title": "Wasted $/hr (paid FLOPs not used)", "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
-     "targets": [{"expr": "gpu_wasted_cost_usd_per_hr"}]}
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "GPU-Util % vs MFU (The 'Busy Clock' Lie)",
+      "description": "Notice how gpu-h100-4 displays >98% GPU-Util while delivering only ~19.4% MFU!",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {"expr": "gpu_util_pct", "legendFormat": "{{gpu_id}} (Util %)"},
+        {"expr": "gpu_mfu * 100", "legendFormat": "{{gpu_id}} (MFU %)"}
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Model Bandwidth Utilization (MBU %)",
+      "description": "Indicates memory-bound decode bottlenecks on LLM workloads",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {"expr": "gpu_mbu * 100", "legendFormat": "{{gpu_id}} - {{gpu_type}} (MBU %)"}
+      ]
+    },
+    {
+      "id": 3,
+      "type": "bargauge",
+      "title": "Wasted Compute Spend ($/hr) — Paid for FLOPs Not Used",
+      "description": "Calculated as (1 - MFU) * $/GPU-hr",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [
+        {"expr": "gpu_wasted_cost_usd_per_hr", "legendFormat": "{{gpu_id}} ({{gpu_type}})"}
+      ]
+    },
+    {
+      "id": 4,
+      "type": "bargauge",
+      "title": "Carbon Emissions Rate (gCO2e / hr)",
+      "description": "Grid carbon intensity in us-east-1 based on active wattage",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [
+        {"expr": "gpu_carbon_rate_gco2_per_hr", "legendFormat": "{{gpu_id}} ({{gpu_type}})"}
+      ]
+    }
   ]
 }
